@@ -15,7 +15,8 @@ The goal:
 - using Spring 5.x
 - using JDK 17
 
-This application will consume messages from a Kafka topic and write them to a directory.
+This application will consume EDI X12 messages from a directory and write them to a directory as JSON 
+(using [the Gozer parser](https://github.com/walmartlabs/gozer) and object model).
 
 # Camel as a standalone application
 This application is built using Camel `Main` which allows the [application to be run as a standalone Java application](http://people.apache.org/~dkulp/camel/running-camel-standalone.html)
@@ -40,7 +41,6 @@ The [Apache Camel migration guide](https://camel.apache.org/manual/camel-3-migra
 - the methods on `CamelContext` were reduced. Some were moved to `CatalogCamelContext`, `ModelCamelContext` and `ExtendedCamelContext`
 - testing with `adviceWith` changed
 - testing with `createRegistry` to register beans from `JndiRegistry` changed
-- Camel 3 will not support JDK 8 [starting with release 3.15](https://camel.apache.org/releases/release-3.15.0/)
 
 ## Camel LTS releases 
 With 3.x Camel [moved to an LTS model like the JDK](https://camel.apache.org/blog/2020/03/LTS-Release-Schedule/). 
@@ -52,11 +52,11 @@ The LTS versions:
 - 3.11.0 (EOL in June 2022)
 - 3.14.0 (EOL in Dec 2022)
 
-Some major changes start with the release of Camel 3.15.0
-- removes support for JDK 8
+Some major changes start with the non-LTS release of Camel 3.15.0
+- [removes support for JDK 8](https://camel.apache.org/releases/release-3.15.0/)
 - [removes support for spring-java-config](https://issues.apache.org/jira/browse/CAMEL-17354)
 
-In addition, Camel 3.17 will support JDK 17 as well as JDK 11
+In addition, Camel 3.17 (non-LTS) will support JDK 17 as well as JDK 11
 
 ## The migration plan for this application
 - (Phase 1) Migrate the Camel application from 2.24.x to Camel 3.14.x.

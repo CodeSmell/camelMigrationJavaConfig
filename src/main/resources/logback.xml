@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true" scanPeriod="60 seconds">
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+<!--        <encoder class="net.logstash.logback.encoder.LogstashEncoder">-->
+<!--            <timeZone>UTC</timeZone>-->
+<!--            <fieldNames>-->
+<!--                <timestamp>timestamp</timestamp>-->
+<!--                <version>[ignore]</version>-->
+<!--                <levelValue>[ignore]</levelValue>-->
+<!--            </fieldNames>-->
+<!--            <customFields>{"module": "camel migration"}</customFields>-->
+<!--            <includeTags>false</includeTags>-->
+<!--            <includeMdc>true</includeMdc>-->
+<!--        </encoder>-->
+    </appender>
+
+    <!-- limit level of logging -->
+    <logger name="org.apache.camel" level="WARN"/>
+    <logger name="org.apache.camel.spring" level="INFO"/>
+    <logger name="org.apache.camel.component.log" level="WARN"/>
+    <logger name="org.springframework" level="WARN"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>
