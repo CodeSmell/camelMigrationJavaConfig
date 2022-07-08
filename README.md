@@ -57,9 +57,10 @@ Run the application
 # The Migration Plan
 - (Starting point) A Camel 2.24.x application
 - (Phase 1) Migrate the Camel application from 2.24.x to Camel 3.14.x.
-  - this moves the application to the current LTS
+  - this moves the application to the current LTS (prior to major changes in 3.15)
   - it holds off on dealing with the JDK and Java-Config changes
-- (Phase 2) Migrate the application from 3.14.0 to Camel 3.17.0
+- (Phase 2) Migrate the application from 3.14.0 to Camel 3.18.0
+  - move to the latest LTS
   - move to JDK 17
   - evaluate options with Java-Config removal
 
@@ -152,11 +153,12 @@ Here are some run-time errors
   -- solved it by creating a separate route to write the parser error file which could be intercepted 
 
 # Major Highlights for Camel Migration (Phase 2)
-Making the jump from 3.14.x to 3.17 is aided by checking out the changes in the non-LTS versions
+Making the jump from 3.14.x to 3.18 is aided by checking out the changes in the non-LTS versions
 - [Upgrading from 3.14 to 3.15](https://camel.apache.org/manual/camel-3x-upgrade-guide-3_15.html)
 - [What's new in 3.15](https://camel.apache.org/blog/2022/02/camel315-whatsnew/)
 - [What's new in 3.16](https://camel.apache.org/blog/2022/03/camel316-whatsnew/)
 - [What's new in 3.17](https://camel.apache.org/blog/2022/05/camel317-whatsnew/)
+- [What's new in 3.18](https://camel.apache.org/blog/2022/07/RELEASE-3.18.0/)
 
 ## Change the JDK
 ### Install JDK 17
@@ -201,11 +203,11 @@ Change the Camel version from
 
 To
 
-    <camel.version>3.17.0</camel.version>
+    <camel.version>3.18.0</camel.version>
 
 Doing a build will result in the following error:
 
-    Unresolved dependency: 'org.apache.camel:camel-spring-javaconfig:jar:3.17.0'
+    Unresolved dependency: 'org.apache.camel:camel-spring-javaconfig:jar:3.18.0'
 
 So we will also have to remove that dependency from the pom file
 s
