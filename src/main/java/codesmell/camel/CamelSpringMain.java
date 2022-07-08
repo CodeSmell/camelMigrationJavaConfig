@@ -1,10 +1,13 @@
 package codesmell.camel;
 
 import codesmell.util.LogFormatUtil;
-import org.apache.camel.spring.javaconfig.Main;
+import org.apache.camel.spring.Main;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class CamelSpringMain {
     private static final Logger LOGGER = LoggerFactory.getLogger(CamelSpringMain.class);
@@ -21,8 +24,9 @@ public class CamelSpringMain {
      * Camel Spring Main (Java-Config)
      */
     public static void boot() throws Exception {
+        ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/spring/beans.xml");
         Main camelSpringMain = new Main();
-        camelSpringMain.setBasedPackages("codesmell.config");
+        camelSpringMain.setApplicationContext((AbstractApplicationContext) ctx);
         camelSpringMain.run();
     }
 }

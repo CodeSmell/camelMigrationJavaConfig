@@ -193,3 +193,81 @@ Set the JDK to 17
 ### Change the JDK to 17 in your IDE
 
 ![Issues](ChangeTheJDK.png)
+
+## Change the Camel version in the pom
+Change the Camel version from
+
+    <camel.version>3.14.3</camel.version>
+
+To
+
+    <camel.version>3.17.0</camel.version>
+
+Doing a build will result in the following error:
+
+    Unresolved dependency: 'org.apache.camel:camel-spring-javaconfig:jar:3.17.0'
+
+So we will also have to remove that dependency from the pom file
+s
+If we had not changed the JDK to 11 or higher there would also have been this error:
+
+    class file has wrong version 55.0, should be 52.0
+
+## Replace Spring Java-Config
+With the [Spring Java-Config module](https://camel.apache.org/components/3.14.x/others/spring-javaconfig.html), an application could use helper classes to [configure the `CamelContext` in Spring](https://camel.apache.org/manual/camelcontext.html).
+This was used in the Camel 2.x and initial migration to Camel 3.x.
+
+    @Configuration
+    public class CamelContextConfig extends CamelConfiguration {
+
+This module was removed in Camel 3.15.
+
+- delete `CamelContextConfig` class which relied on `CamelConfiguration`
+- change `CamelSpringMain` which uses `org.apache.camel.spring.javaconfig.Main` 
+
+### Main without Spring
+The `...spring.javaconfig.Main` could be swapped out to use `org.apache.camel.main.Main`. 
+However, that would seem to be a bigger change as our application relies on Spring to manage dependencies. 
+For anyone interested in this approach [checkout the example in Camel repo](https://github.com/apache/camel-examples/tree/main/examples/main)
+
+### Main with Spring
+We will swap out the  `...spring.javaconfig.Main` with `org.apache.camel.spring.Main`. 
+
+We will replace the following:
+
+    org.apache.camel.spring.javaconfig.Main camelSpringMain = new Main();
+    camelSpringMain.setBasedPackages("codesmell.config");
+
+with the following:
+
+    ApplicationContext ctx = new ClassPathXmlApplicationContext("META-INF/spring/beans.xml");
+    org.apache.camel.spring.Main camelSpringMain = new Main();
+    camelSpringMain.setApplicationContext((AbstractApplicationContext) ctx);
+
+This approach relies on a Spring XML file to kick things off. However, we can still use Java DSL to define our Camel routes. 
+We just are using the XML to let Camel configure our `CamelContext`. We will reply on component scanning to manage the rest. 
+
+    <!-- 
+        this is similar to doing this 
+        camelSpringMain.setBasedPackages("codesmell.config");
+    -->
+    <context:component-scan base-package="codesmell.config"/>
+    
+    <camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">
+        <contextScan/>
+    </camelContext>
+
+To get all of this working we need to add the following dependencies to the pom file
+
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring-main</artifactId>
+            <version>${camel.version}</version>
+        </dependency>  
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring-xml</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+ 
+
