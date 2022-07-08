@@ -30,7 +30,8 @@ The LTS versions:
 - 3.7.0 (EOL in Dec 2021)
 - 3.11.0 (EOL in June 2022)
 - 3.14.0 (EOL in Dec 2022)
-
+- 3.18.0 (EOL in July 2023)
+- 
 Some major changes start with the non-LTS release of Camel 3.15.0
 - [removes support for JDK 8](https://camel.apache.org/releases/release-3.15.0/)
 - [removes support for spring-java-config](https://issues.apache.org/jira/browse/CAMEL-17354)
