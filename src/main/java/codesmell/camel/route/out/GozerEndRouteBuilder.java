@@ -24,9 +24,9 @@ public class GozerEndRouteBuilder extends RouteBuilder {
             .log(LoggingLevel.INFO, "writing out split X12 document...")
             .process(exchange -> {
                 // should have Gozer POJOs
-                StandardX12Document x12Doc = exchange.getIn().getBody(StandardX12Document.class);
+                StandardX12Document x12Doc = exchange.getMessage().getBody(StandardX12Document.class);
                 String jsonGozer = jsonMapper.writeValueAsString(x12Doc);
-                exchange.getIn().setBody(jsonGozer);
+                exchange.getMessage().setBody(jsonGozer);
             })
             // write each file using the camel message id
             .to(CamelConstants.OUTBOX_ENDPOINT);

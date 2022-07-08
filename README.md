@@ -74,3 +74,79 @@ To access that version of the code locally
     git checkout tags/camel3xPhase1 -b camel3xPhase1Branch
 
 The `main` branch will contain the Camel 3.x version of the application after phase 2 is completed
+
+
+# Major Highlights for Camel Migration (Phase 1)
+The [Apache Camel migration guide](https://camel.apache.org/manual/camel-3-migration-guide.html) is being used to start things off.
+
+### Change the Camel version in the pom
+Change the Camel version from
+
+    <camel.version>2.24.3</camel.version>
+
+To
+
+    <camel.version>3.14.3</camel.version>
+
+The majority of the errors will be in compiling the unit tests
+
+![Issues](Camel2to3issues.png)
+
+Here are some run-time errors
+
+    Caused by: org.apache.camel.spring.javaconfig.CamelSpringJavaconfigInitializationException: org.apache.camel.FailedToCreateRouteException: Failed to create route gozerSplitMessage at: >>> Log[Finished splitting X12 File into ${property.total.tx.sets} documents] <<< in route: Route(gozerSplitMessage)[From[direct:gozerSplitMessage] -> [... because of Unknown function: property.total.tx.sets at location 33
+    Finished splitting X12 File into ${property.total.tx.sets} documents
+
+### Looking at some of the changes
+- the simple language `property` function was deprecated in Camel 2.x and has been removed. Use `exchangeProperty` instead.
+
+         .log(LoggingLevel.INFO, "Finished splitting X12 File into ${exchangeProperty.total.tx.sets} documents")
+
+- the `getMessage` method on the `Exchange` is the preferred approach to accessing the headers, body and other data over `getIn` and `getOut`
+  -- Note: the `getOut` method was deprecated. The `getIn` was not. Since these methods return a `Message` this sample application was updated to use `getMessage` instead of `getIn`
+
+### Getting the tests running again
+- the `DefaultExchange` was imported from `import org.apache.camel.impl`. That needs to be changed to `org.apache.camel.support`
+
+- the `JndiRegistry` and `createRegistry` are no longer needed.
+
+          //
+          // old way
+          //
+          @Override
+          protected JndiRegistry createRegistry() throws Exception {
+              JndiRegistry registry = super.createRegistry();
+              registry.bind("x12SplitterProcessor", x12SplitterProcessor);
+              return registry;
+          }
+
+         //
+         // new way
+         //
+         context.getRegistry().bind("x12SplitterProcessor", x12SplitterProcessor);
+
+- the `adviceWith` method was replaced with `AdviceWith`.
+
+          //
+          // old way
+          //
+-         context.getRouteDefinition(CamelConstants.WRITE_FILE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
+          @Override
+          public void configure() {
+                  interceptSendToEndpoint(CamelConstants.OUTBOX_ENDPOINT)
+                      .skipSendToOriginalEndpoint()
+                      .to(MOCK_OUTBOX_ENDPOINT);
+              }
+          });
+
+          //
+          // new way
+          //
+          AdviceWith.adviceWith(context, CamelConstants.WRITE_FILE_ROUTE_ID, a -> {
+              a.interceptSendToEndpoint(CamelConstants.OUTBOX_ENDPOINT)
+                    .skipSendToOriginalEndpoint()
+                    .to(MOCK_OUTBOX_ENDPOINT);
+          });
+
+- There were issues with using `AdviceWidth` when trying to intercept and mock an endpoint from `onException`
+  -- solved it by creating a separate route to write the parser error file which could be intercepted 
