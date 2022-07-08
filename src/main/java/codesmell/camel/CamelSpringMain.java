@@ -14,8 +14,8 @@ public class CamelSpringMain {
 
     public static void main(String[] args) throws Exception {
         LogFormatUtil.logger(LOGGER)
-                .withMessage("camel spring main with java config...")
-                .andLog(Level.INFO);
+            .withMessage("camel spring main with java config...")
+            .andLog(Level.INFO);
 
         boot();
     }
