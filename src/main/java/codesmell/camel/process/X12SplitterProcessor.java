@@ -35,9 +35,9 @@ public class X12SplitterProcessor implements Processor {
             .withMessage("splitting X12 file...")
             .andLog(Level.INFO);
 
-        String x12File = exchange.getIn().getBody(String.class);
+        String x12File = exchange.getMessage().getBody(String.class);
         List<String> x12TransactionSets = x12TransactionSplitter.split(x12File);
 
-        exchange.getIn().setBody(x12TransactionSets);
+        exchange.getMessage().setBody(x12TransactionSets);
     }
 }

@@ -8,13 +8,12 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.Produce;
 import org.apache.camel.ProducerTemplate;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.impl.DefaultExchange;
-import org.apache.camel.impl.JndiRegistry;
+import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit4.CamelTestSupport;
 import org.junit.runner.RunWith;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.annotation.DirtiesContext;
@@ -66,9 +65,12 @@ public class MultiRouteTest extends CamelTestSupport {
         mockOutboxEndpoint = getMockEndpoint(MOCK_OUTBOX_ENDPOINT);
         mockParserErrorEndpoint = getMockEndpoint(MOCK_PARSER_ERROR_ENDPOINT);
 
+        context.getRegistry().bind("x12SplitterProcessor", x12SplitterProcessor);
+
         context.addRoutes(gozerInRoute);
         context.addRoutes(gozerTxSetRoute);
         context.addRoutes(gozerEndRoute);
+
     }
 
     @Test
@@ -80,7 +82,7 @@ public class MultiRouteTest extends CamelTestSupport {
         mockOutboxEndpoint.expectedMessageCount(1);
         mockParserErrorEndpoint.expectedMessageCount(0);
         mockOutboxEndpoint.expectedMessagesMatches(exchange -> {
-            String asnJson = exchange.getIn().getBody(String.class);
+            String asnJson = exchange.getMessage().getBody(String.class);
             return asnJson.contains("\"shipmentIdentification\":\"9876\"");
         });
 
@@ -88,7 +90,7 @@ public class MultiRouteTest extends CamelTestSupport {
         exchangeIn.getMessage().setBody(this.sampleAdvanceShipNotice("9876"));
         Exchange exchangeOut = camelProducer.send(exchangeIn);
 
-        String origMessage = exchangeOut.getIn().getBody(String.class);
+        String origMessage = exchangeOut.getMessage().getBody(String.class);
         assertTrue(origMessage.contains("BSN*00*9876*20101127*2226*0001"));
 
         assertFalse(exchangeOut.isFailed());
@@ -110,7 +112,7 @@ public class MultiRouteTest extends CamelTestSupport {
         mockOutboxEndpoint.expectedMessageCount(0);
         mockParserErrorEndpoint.expectedMessageCount(1);
         mockParserErrorEndpoint.expectedMessagesMatches(exchange -> {
-            String asnJson = exchange.getIn().getBody(String.class);
+            String asnJson = exchange.getMessage().getBody(String.class);
             return asnJson.contains("BSN*00*1234*20101127*2226*0001");
         });
 
@@ -118,7 +120,7 @@ public class MultiRouteTest extends CamelTestSupport {
         exchangeIn.getMessage().setBody(this.sampleAdvanceShipNoticeInvalidFormat("1234"));
         Exchange exchangeOut = camelProducer.send(exchangeIn);
 
-        String origMessage = exchangeOut.getIn().getBody(String.class);
+        String origMessage = exchangeOut.getMessage().getBody(String.class);
         assertTrue(origMessage.contains("BSN*00*1234*20101127*2226*0001"));
 
         assertFalse(exchangeOut.isFailed());
@@ -145,47 +147,25 @@ public class MultiRouteTest extends CamelTestSupport {
         exchangeIn.getMessage().setBody(this.sampleAdvanceShipNotice("ERROR567"));
         Exchange exchangeOut = camelProducer.send(exchangeIn);
 
-        String origMessage = exchangeOut.getIn().getBody(String.class);
+        String origMessage = exchangeOut.getMessage().getBody(String.class);
         assertTrue(origMessage.contains("BSN*00*ERROR567*20101127*2226*0001"));
 
         this.assertMockEndpointsSatisfied();
     }
 
-    @Override
-    protected JndiRegistry createRegistry() throws Exception {
-        JndiRegistry registry = super.createRegistry();
-        registry.bind("x12SplitterProcessor", x12SplitterProcessor);
-        return registry;
-    }
-
     private void interceptOutBoxSuccess() throws Exception {
-        context.getRouteDefinition(CamelConstants.WRITE_FILE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
-            @Override
-            public void configure() {
-                interceptSendToEndpoint(CamelConstants.OUTBOX_ENDPOINT)
+        AdviceWith.adviceWith(context, CamelConstants.WRITE_FILE_ROUTE_ID, a -> {
+            a.interceptSendToEndpoint(CamelConstants.OUTBOX_ENDPOINT)
                     .skipSendToOriginalEndpoint()
                     .to(MOCK_OUTBOX_ENDPOINT);
-            }
-        });
+         });
     }
 
     private void interceptParserErrorSuccess() throws Exception {
-        context.getRouteDefinition(CamelConstants.SPLIT_MESSAGE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
-            @Override
-            public void configure() {
-                interceptSendToEndpoint(CamelConstants.PARSER_ERROR_ENDPOINT)
+        AdviceWith.adviceWith(context, CamelConstants.WRITE_PARSER_ERROR_ROUTE_ID, a -> {
+            a.interceptSendToEndpoint(CamelConstants.PARSER_ERROR_ENDPOINT)
                     .skipSendToOriginalEndpoint()
                     .to(MOCK_PARSER_ERROR_ENDPOINT);
-            }
-        });
-
-        context.getRouteDefinition(CamelConstants.PROCESS_SPLIT_MESSAGE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
-            @Override
-            public void configure() {
-                interceptSendToEndpoint(CamelConstants.PARSER_ERROR_ENDPOINT)
-                    .skipSendToOriginalEndpoint()
-                    .to(MOCK_PARSER_ERROR_ENDPOINT);
-            }
         });
     }
 

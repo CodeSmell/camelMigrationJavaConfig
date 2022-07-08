@@ -25,7 +25,7 @@ public class X12SaveProcessor implements Processor {
             .andLog(Level.INFO);
 
         // exception simulator
-        StandardX12Document x12ParsedDoc = exchange.getIn().getBody(StandardX12Document.class);
+        StandardX12Document x12ParsedDoc = exchange.getMessage().getBody(StandardX12Document.class);
         String bsn02 = X12GozerDataExtractionUtil.extractDocumentNumber(x12ParsedDoc);
         if (StringUtils.hasLength(bsn02) && bsn02.startsWith("ERROR")) {
             throw new RetryableException("an error occurred...");

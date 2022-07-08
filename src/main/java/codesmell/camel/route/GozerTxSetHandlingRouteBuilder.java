@@ -34,7 +34,7 @@ public class GozerTxSetHandlingRouteBuilder extends RouteBuilder {
             .log(LoggingLevel.INFO, "Processing split X12 document...")
             .process(exchange -> {
                 // parsing the document
-                String x12Doc = exchange.getIn().getBody(String.class);
+                String x12Doc = exchange.getMessage().getBody(String.class);
                 StandardX12Document x12ParsedDoc = x12Parser.parse(x12Doc);
 
                 String bsn02 = X12GozerDataExtractionUtil.extractDocumentNumber(x12ParsedDoc);
@@ -42,7 +42,7 @@ public class GozerTxSetHandlingRouteBuilder extends RouteBuilder {
                     .withMessage("parsed ASN document successfully: " + bsn02)
                     .andLog(Level.INFO);
 
-                exchange.getIn().setBody(x12ParsedDoc);
+                exchange.getMessage().setBody(x12ParsedDoc);
             })
             // call the bean as a process
             // that was autowired

@@ -13,6 +13,10 @@ public final class CamelConstants {
     public static final String WRITE_FILE_ROUTE_URI = "direct:gozerEnd";
     public static final String WRITE_FILE_ROUTE_ID = "gozerEnd";
 
+    public static final String WRITE_PARSER_ERROR_ROUTE_URI = "direct:writeParserError";
+    public static final String WRITE_PARSER_ERROR_ROUTE_ID = "writeParserError";
+
+
     /**
      * endpoints
      */

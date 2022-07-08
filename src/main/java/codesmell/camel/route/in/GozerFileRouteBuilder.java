@@ -23,7 +23,11 @@ public class GozerFileRouteBuilder extends RouteBuilder {
         onException(X12ParserException.class)
             .handled(true)
             .log(LoggingLevel.WARN, "Error parsing document: ${id}.txt")
-            .to(CamelConstants.PARSER_ERROR_ENDPOINT)
+            // there was an issue w/ the AdviceWith changes in Camel 3
+            // that wouldn't work unless moved this file endpoint
+            // to another route
+            //.to(CamelConstants.PARSER_ERROR_ENDPOINT)   // what was working in Camel 2
+            .to(CamelConstants.WRITE_PARSER_ERROR_ROUTE_URI)
             .end();
 
         onException(RetryableException.class)
@@ -34,6 +38,13 @@ public class GozerFileRouteBuilder extends RouteBuilder {
         this.fileInRoute();
 
         this.splitEdiMessageRoute();
+
+        // route to allow MultiRouteTest to
+        // work using AdviceWith changes in Camel 3
+        from(CamelConstants.WRITE_PARSER_ERROR_ROUTE_URI)
+            .routeId(CamelConstants.WRITE_PARSER_ERROR_ROUTE_ID)
+            .log(LoggingLevel.INFO, "writing error file")
+            .to(CamelConstants.PARSER_ERROR_ENDPOINT);
     }
 
     public void fileInRoute() throws Exception {
@@ -55,10 +66,10 @@ public class GozerFileRouteBuilder extends RouteBuilder {
             // splitter separates each transaction set out
             // from the original message and puts them into a list
             .process(exchange -> {
-                List<String> x12TransactionSets = exchange.getIn().getBody(List.class);
+                List<String> x12TransactionSets = exchange.getMessage().getBody(List.class);
                 exchange.setProperty("total.tx.sets", x12TransactionSets.size());
             })
-            .log(LoggingLevel.INFO, "Finished splitting X12 File into ${property.total.tx.sets} documents")
+            .log(LoggingLevel.INFO, "Finished splitting X12 File into ${exchangeProperty.total.tx.sets} documents")
             // multi route processing
             // send each member of the list to another route to be processed
             .split(body())

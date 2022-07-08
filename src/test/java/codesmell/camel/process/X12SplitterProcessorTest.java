@@ -4,7 +4,7 @@ import com.walmartlabs.x12.exceptions.X12ParserException;
 import com.walmartlabs.x12.util.split.X12TransactionSplitter;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.DefaultExchange;
+import org.apache.camel.support.DefaultExchange;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class X12SplitterProcessorTest {
         Exchange exchange = this.createExchangeWithBody(body);
         x12SplitterProcessor.process(exchange);
 
-        List<String> txSets = exchange.getIn().getBody(List.class);
+        List<String> txSets = exchange.getMessage().getBody(List.class);
         assertNotNull(txSets);
         assertTrue(CollectionUtils.isEmpty(txSets));
     }
@@ -53,7 +53,7 @@ public class X12SplitterProcessorTest {
         Exchange exchange = this.createExchangeWithBody(body);
         x12SplitterProcessor.process(exchange);
 
-        List<String> txSets = exchange.getIn().getBody(List.class);
+        List<String> txSets = exchange.getMessage().getBody(List.class);
         assertNotNull(txSets);
         assertTrue(CollectionUtils.isEmpty(txSets));
     }
