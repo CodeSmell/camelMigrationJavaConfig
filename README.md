@@ -31,7 +31,7 @@ The LTS versions:
 - 3.11.0 (EOL in June 2022)
 - 3.14.0 (EOL in Dec 2022)
 - 3.18.0 (EOL in July 2023)
-- 
+
 Some major changes start with the non-LTS release of Camel 3.15.0
 - [removes support for JDK 8](https://camel.apache.org/releases/release-3.15.0/)
 - [removes support for spring-java-config](https://issues.apache.org/jira/browse/CAMEL-17354)
@@ -231,7 +231,7 @@ This module was removed in Camel 3.15.
 ### Main without Spring
 The `...spring.javaconfig.Main` could be swapped out to use `org.apache.camel.main.Main`. 
 However, that would seem to be a bigger change as our application relies on Spring to manage dependencies. 
-For anyone interested in this approach [checkout the example in Camel repo](https://github.com/apache/camel-examples/tree/main/examples/main)
+For anyone interested in this approach [checkout the example in Camel repo](https://github.com/apache/camel-examples/tree/main/examples/main).
 
 ### Main with Spring
 We will swap out the  `...spring.javaconfig.Main` with `org.apache.camel.spring.Main`. 
@@ -261,16 +261,16 @@ We just are using the XML to let Camel configure our `CamelContext`. We will rep
     </camelContext>
 
 To get all of this working we need to add the following dependencies to the pom file
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-main</artifactId>
-            <version>${camel.version}</version>
-        </dependency>  
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-xml</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
+  
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-spring-main</artifactId>
+        <version>${camel.version}</version>
+    </dependency>  
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-spring-xml</artifactId>
+        <version>${camel.version}</version>
+    </dependency>
  
 
