@@ -130,7 +130,7 @@ Here are some run-time errors
           //
           // old way
           //
--         context.getRouteDefinition(CamelConstants.WRITE_FILE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
+          context.getRouteDefinition(CamelConstants.WRITE_FILE_ROUTE_ID).adviceWith(context, new RouteBuilder() {
           @Override
           public void configure() {
                   interceptSendToEndpoint(CamelConstants.OUTBOX_ENDPOINT)
@@ -150,3 +150,46 @@ Here are some run-time errors
 
 - There were issues with using `AdviceWidth` when trying to intercept and mock an endpoint from `onException`
   -- solved it by creating a separate route to write the parser error file which could be intercepted 
+
+# Major Highlights for Camel Migration (Phase 2)
+Making the jump from 3.14.x to 3.17 is aided by checking out the changes in the non-LTS versions
+- [Upgrading from 3.14 to 3.15](https://camel.apache.org/manual/camel-3x-upgrade-guide-3_15.html)
+- [What's new in 3.15](https://camel.apache.org/blog/2022/02/camel315-whatsnew/)
+- [What's new in 3.16](https://camel.apache.org/blog/2022/03/camel316-whatsnew/)
+- [What's new in 3.17](https://camel.apache.org/blog/2022/05/camel317-whatsnew/)
+
+## Change the JDK
+### Install JDK 17
+- [Installing Azul Zulu JDK 17](https://docs.azul.com/core/zulu-openjdk/install/macos)
+  This will be installed here by default
+
+
+     /Library/Java/JavaVirtualMachines
+
+### Change the JDK in the Terminal
+A nice tool to manage multiple JDKs on the Mac [is jEnv](https://www.jenv.be/)
+
+After installing Zulu 17 we need to add it to jEnv
+
+    $> jenv add /Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home
+
+Check all the JDKs managed by jEnv
+
+    $> jenv versions
+       * oracle64-1.8.0.211
+       zulu64-1.8.0.212
+       zulu64-11.0.13
+       zulu64-17.0.3
+
+Set the JDK to 17
+
+    $> jenv global zulu64-17.0.3
+
+### Change the JDK to 17 in the pom
+
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+
+### Change the JDK to 17 in your IDE
+
+![Issues](ChangeTheJDK.png)
