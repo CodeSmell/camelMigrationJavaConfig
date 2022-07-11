@@ -210,8 +210,8 @@ Doing a build will result in the following error:
 
     Unresolved dependency: 'org.apache.camel:camel-spring-javaconfig:jar:3.18.0'
 
-So we will also have to remove that dependency from the pom file
-s
+So we will also have to remove that dependency from the pom file.
+
 If we had not changed the JDK to 11 or higher there would also have been this error:
 
     class file has wrong version 55.0, should be 52.0
@@ -272,5 +272,4 @@ To get all of this working we need to add the following dependencies to the pom 
         <artifactId>camel-spring-xml</artifactId>
         <version>${camel.version}</version>
     </dependency>
- 
 
