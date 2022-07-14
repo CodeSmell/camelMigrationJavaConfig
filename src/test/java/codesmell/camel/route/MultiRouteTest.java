@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @CamelSpringTest
 @ContextConfiguration(
-        locations = {"/MultiRouteTest-context.xml"},
+        locations = {"classpath:MultiRouteTest-context.xml"},
         classes = {BeanConfig.class, CamelRoutesConfig.class})
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class MultiRouteTest {

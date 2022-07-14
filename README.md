@@ -65,7 +65,7 @@ Run the application
   - move to JDK 17
   - evaluate options with Java-Config removal
 - (Phase 3) Migrate the testing in the application from jUnit 4 to jUnit 5
-- remove need for deprecated Camel testing
+  - remove need for deprecated Camel testing
 
 The branch `camel2x` will contain the Camel 2.x version of the application
 To access that version of the code locally
@@ -400,11 +400,26 @@ This test class will load a Spring XML file that is in the same package with the
 We need to add that file to the same package as the test class. 
 This file is a simplified version of the `beans.xml` file in `src\main\resources`.
 
-Note: I could not get this to work without specifying the location to the XML file in the `@CamelConfiguration` and moving the XML file to the `src/test/resources` folder.
+Note: I could not get the tests to run in the IDE without specifying the location to the XML file in the `@CamelConfiguration` and moving the XML file to the `src/test/resources` folder.
 
     @CamelSpringTest
     @ContextConfiguration(
-    locations = {"MultiRouteTest-context.xml"},
+    locations = {"classpath:MultiRouteTest-context.xml"},
     classes = {BeanConfig.class, CamelRoutesConfig.class})
     @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
     public class MultiRouteTest {
+
+Note 2: Running the tests from the command line (`mvn test`) also did not work until the `maven-surefire-plugin` was added to insure jUnit 5 was used.
+
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.0.0-M7</version>
+      <dependencies>
+          <dependency>
+              <groupId>org.junit.jupiter</groupId>
+              <artifactId>junit-jupiter-engine</artifactId>
+              <version>${junit5.version}</version>
+          </dependency>
+      </dependencies>
+  </plugin>
