@@ -56,15 +56,15 @@ Run the application
 	mvn camel:run
 
 # The Migration Plan
-- (Starting point) A Camel 2.24.x application
-- (Phase 1) Migrate the Camel application from 2.24.x to Camel 3.14.x.
+- (**Starting point**) A Camel 2.24.x application
+- (**Phase 1**) Migrate the Camel application from 2.24.x to Camel 3.14.x.
   - this moves the application to the current LTS (prior to major changes in 3.15)
   - it holds off on dealing with the JDK and Java-Config changes
-- (Phase 2) Migrate the application from 3.14.0 to Camel 3.18.0
+- (**Phase 2**) Migrate the application from 3.14.0 to Camel 3.18.0
   - move to the latest LTS
   - move to JDK 17
   - evaluate options with Java-Config removal
-- (Phase 3) Migrate the testing in the application from jUnit 4 to jUnit 5
+- (**Phase 3**) Migrate the testing in the application from jUnit 4 to jUnit 5
   - remove need for deprecated Camel testing
 
 The branch `camel2x` will contain the Camel 2.x version of the application
