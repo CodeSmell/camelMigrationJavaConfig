@@ -64,6 +64,8 @@ Run the application
   - move to the latest LTS
   - move to JDK 17
   - evaluate options with Java-Config removal
+- (Phase 3) Migrate the testing in the application from jUnit 4 to jUnit 5
+- remove need for deprecated Camel testing
 
 The branch `camel2x` will contain the Camel 2.x version of the application
 To access that version of the code locally
@@ -75,7 +77,12 @@ To access that version of the code locally
 
     git checkout tags/camel3xPhase1 -b camel3xPhase1Branch
 
-The `main` branch will contain the Camel 3.x version of the application after phase 2 is completed
+The branch `camel3xPhase2Xml` will contain the Camel 3.x version of the application after phase 2 is completed
+To access that version of the code locally
+
+    git checkout tags/camel3xPhase2Xml -b camel3xPhase2Branch
+
+The `main` branch will contain the Camel 3.x version of the application after phase 3 is completed
 
 
 # Major Highlights for Camel Migration (Phase 1)
