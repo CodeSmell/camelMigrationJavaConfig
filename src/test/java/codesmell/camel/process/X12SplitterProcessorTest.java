@@ -1,32 +1,29 @@
 package codesmell.camel.process;
 
+import codesmell.camel.TestDataUtil;
 import com.walmartlabs.x12.exceptions.X12ParserException;
 import com.walmartlabs.x12.util.split.X12TransactionSplitter;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * more tests could be written ...
  */
 public class X12SplitterProcessorTest {
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
     private X12SplitterProcessor x12SplitterProcessor;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    public void setupEachTest() {
         x12SplitterProcessor = new X12SplitterProcessor();
         X12TransactionSplitter gozerSplitter = new X12TransactionSplitter();
         ReflectionTestUtils.setField(x12SplitterProcessor, "x12TransactionSplitter", gozerSplitter);
@@ -46,16 +43,27 @@ public class X12SplitterProcessorTest {
     @Test
     public void test_processWithNonEdiMessage() {
 
-        exception.expect(X12ParserException.class);
-        exception.expectMessage("expected ISA segment but got foo");
-
         String body = "fooBar";
         Exchange exchange = this.createExchangeWithBody(body);
+
+        X12ParserException thrownException = assertThrows(
+                X12ParserException.class,
+                () -> x12SplitterProcessor.process(exchange));
+
+        assertEquals("expected ISA segment but got foo", thrownException.getMessage());
+    }
+
+    @Test
+    public void test_processWithEdiMessage() {
+
+        String body = TestDataUtil.sampleAdvanceShipNotice("FOO123");
+        Exchange exchange = this.createExchangeWithBody(body);
+
         x12SplitterProcessor.process(exchange);
 
         List<String> txSets = exchange.getMessage().getBody(List.class);
         assertNotNull(txSets);
-        assertTrue(CollectionUtils.isEmpty(txSets));
+        assertEquals(1, txSets.size());
     }
 
     private Exchange createExchangeWithBody(String input) {
