@@ -56,16 +56,16 @@ Run the application
 	mvn camel:run
 
 # The Migration Plan
-- (Starting point) A Camel 2.24.x application
-- (Phase 1) Migrate the Camel application from 2.24.x to Camel 3.14.x.
+- (**Starting point**) A Camel 2.24.x application
+- (**Phase 1**) Migrate the Camel application from 2.24.x to Camel 3.14.x.
   - this moves the application to the current LTS (prior to major changes in 3.15)
   - it holds off on dealing with the JDK and Java-Config changes
-- (Phase 2) Migrate the application from 3.14.0 to Camel 3.18.0
+- (**Phase 2**) Migrate the application from 3.14.0 to Camel 3.18.0
   - move to the latest LTS
   - move to JDK 17
   - evaluate options with Java-Config removal
-- (Phase 3) Migrate the testing in the application from jUnit 4 to jUnit 5
-- remove need for deprecated Camel testing
+- (**Phase 3**) Migrate the testing in the application from jUnit 4 to jUnit 5
+  - remove need for deprecated Camel testing
 
 The branch `camel2x` will contain the Camel 2.x version of the application
 To access that version of the code locally
@@ -280,3 +280,146 @@ To get all of this working we need to add the following dependencies to the pom 
         <version>${camel.version}</version>
     </dependency>
 
+# Major Highlights for Camel Migration (Phase 3)
+In this next phase we replace the way we are testing Camel.
+
+## Upgrade unit tests
+As we migrated from Camel 2.x to Camel 3.x we see that the `org.apache.camel.test.junit4.CamelTestSupport` is deprecated.
+As part of moving an older application forward we will upgrade the application to use jUnit 5 and the newer Camel test support.
+
+This page will help manage the migration to jUnit 5 in Camel ([link](https://camel.apache.org/components/3.18.x/others/test-junit5.html))
+There are a variety of approaches to testing in Camel using jUnit 5 ([link](https://camel.apache.org/components/3.18.x/others/test-spring-junit5.html))
+
+This article contains a good overview of the changes between jUnit 4 and 5 ([link](https://www.arhohuttunen.com/junit-5-migration)).
+The migration can be managed incrementally as jUnit 4 and jUnit 5 can coexist.
+
+Remove jUnit 4 and add jUnit 5 to the pom
+
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.8.2</version>
+        <scope>test</scope>
+    </dependency>
+
+Remove the `camel-test` dependency and add `camel-test-spring-junit5`
+
+    <dependency>
+        <groupId>org.apache.camel</groupId>
+        <artifactId>camel-test-spring-junit5</artifactId>
+        <version>${camel.version}</version>
+        <scope>test</scope>
+    </dependency>
+
+In the unit tests change the various imports for jUnit
+Some examples:
+- the import for `@Test`
+- change `@Before` to `@BeforeEach`
+- the import for assertions (assertTrue etc)
+
+Open up `MultiRouteTest` and change the class it extends.
+From:
+
+    @RunWith(SpringJUnit4ClassRunner.class)
+    @ContextConfiguration(classes = { BeanConfig.class, CamelRoutesConfig.class})
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+    public class MultiRouteTest extends CamelTestSupport {
+
+
+To:
+
+    @CamelSpringTest
+    @ContextConfiguration(classes = {BeanConfig.class, CamelRoutesConfig.class})
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+    public class MultiRouteTest {
+
+There is a fair bit of changes that are still reqiured.
+
+In our setup method we had the following:
+
+    @BeforeEach
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+
+        mockOutboxEndpoint = getMockEndpoint(MOCK_OUTBOX_ENDPOINT);
+        mockParserErrorEndpoint = getMockEndpoint(MOCK_PARSER_ERROR_ENDPOINT);
+
+        context.getRegistry().bind("x12SplitterProcessor", x12SplitterProcessor);
+
+        context.addRoutes(gozerInRoute);
+        context.addRoutes(gozerTxSetRoute);
+        context.addRoutes(gozerEndRoute);
+
+    }
+
+A lot of this is taken care of for us. We can remove the `setUp` method. Along with removing this method we can also remove the `@Autowired` routes.
+    
+    @Autowired
+    @Qualifier("gozerFileRoute")
+    RouteBuilder gozerInRoute;
+
+Now let's fix the mock endpoints. 
+We already removed the `setup` but in that method we configured the mock endpoints as follows:
+
+    private MockEndpoint mockOutboxEndpoint;
+    
+    // this was in setup method
+    mockOutboxEndpoint = getMockEndpoint(MOCK_OUTBOX_ENDPOINT);
+
+That gets replaced with the following:
+
+    @EndpointInject(MOCK_OUTBOX_ENDPOINT)
+    private MockEndpoint mockOutboxEndpoint;
+
+Most of the test methods verified that the mock test conditions using this approach:
+
+    this.assertMockEndpointsSatisfied();
+
+That needs to change to the following:
+
+    mockOutboxEndpoint.assertIsSatisfied();
+    mockParserErrorEndpoint.assertIsSatisfied();
+
+We also need to make sure that the mocks are reset after each test:
+
+    @AfterEach
+    public void cleanup() {
+        mockOutboxEndpoint.reset();
+        mockParserErrorEndpoint.reset();
+    }
+
+Finally, we need to have access to the `CamelContext`
+
+Let's start by adding the following:
+
+    @Autowired
+    private CamelContext context;
+
+This test class will load a Spring XML file that is in the same package with the naming pattern `className-context.xml`. 
+We need to add that file to the same package as the test class. 
+This file is a simplified version of the `beans.xml` file in `src\main\resources`.
+
+Note: I could not get the tests to run in the IDE without specifying the location to the XML file in the `@CamelConfiguration` and moving the XML file to the `src/test/resources` folder.
+
+    @CamelSpringTest
+    @ContextConfiguration(
+    locations = {"classpath:MultiRouteTest-context.xml"},
+    classes = {BeanConfig.class, CamelRoutesConfig.class})
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+    public class MultiRouteTest {
+
+Note 2: Running the tests from the command line (`mvn test`) also did not work until the `maven-surefire-plugin` was added to insure jUnit 5 was used.
+
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.0.0-M7</version>
+      <dependencies>
+          <dependency>
+              <groupId>org.junit.jupiter</groupId>
+              <artifactId>junit-jupiter-engine</artifactId>
+              <version>${junit5.version}</version>
+          </dependency>
+      </dependencies>
+  </plugin>
