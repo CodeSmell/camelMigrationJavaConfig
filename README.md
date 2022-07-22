@@ -82,7 +82,7 @@ To access that version of the code locally
 
     git checkout tags/camel3xPhase2Xml -b camel3xPhase2Branch
 
-The branch `camel3xPhase2Xml` will contain the Camel 3.x version of the application after phase 3 is completed
+The branch `camel3xPhase3Junit5` will contain the Camel 3.x version of the application after phase 3 is completed
 To access that version of the code locally
 
     git checkout tags/camel3xPhase3Junit5 -b camel3xPhase3Branch
