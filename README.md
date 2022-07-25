@@ -52,8 +52,10 @@ Build the application
 	mvn clean install
 
 Run the application
+Phase 4 replaced the Camel Main with Spring Boot
 
-	mvn camel:run
+	// mvn camel:run
+    mvn spring-boot:run
 
 # The Migration Plan
 - (**Starting point**) A Camel 2.24.x application
@@ -66,6 +68,8 @@ Run the application
   - evaluate options with Java-Config removal
 - (**Phase 3**) Migrate the testing in the application from jUnit 4 to jUnit 5
   - remove need for deprecated Camel testing
+- (**Phase 4**) Migrate the application to use Spring Boot
+  - replace Camel Main w/ Spring Boot
 
 The branch `camel2x` will contain the Camel 2.x version of the application
 To access that version of the code locally
@@ -87,7 +91,12 @@ To access that version of the code locally
 
     git checkout tags/camel3xPhase3Junit5 -b camel3xPhase3Branch
 
-The `main` branch will contain the Camel 3.x version of the application after phase 3 is completed
+The branch `camel3xPhase4SpringBoot` will contain the Camel 3.x version of the application after phase 4 is completed
+To access that version of the code locally
+
+    git checkout tags/camel3xPhase4SpringBoot -b camel3xPhase4Branch
+
+The `main` branch will contain the Camel 3.x version of the application after phase 4 is completed
 
 
 # Major Highlights for Camel Migration (Phase 1)
@@ -428,3 +437,44 @@ Note 2: Running the tests from the command line (`mvn test`) also did not work u
           </dependency>
       </dependencies>
   </plugin>
+
+# Major Highlights for Camel Migration (Phase 4)
+In this next phase we replace the way the `CamelContext` is autoconfigured. 
+This phase adds Spring Boot and removes the need for the Spring XML file and Camel `Main`. 
+
+The Camel/Spring Boot component provides an "opinionated auto-configuration" of Camel context and routes.  
+- [Camel Spring Boot Starters](https://camel.apache.org/camel-spring-boot/3.18.x/index.html)
+
+## Replacing Camel Main and Spring XML with Spring Boot
+The following changes will need to be done to the pom.xml file:
+- add a dependency management section 
+  - add spring-boot-dependencies
+  - add camel-spring-boot-bom
+- remove the following dependencies
+  - spring-core
+  - spring-context
+  - camel-spring-main
+  - camel-spring-xml
+- add the following dependencies
+  - camel-spring-boot-starter
+- update the plugins
+  - remove camel-maven-plugin
+  - add spring-boot-maven-plugin
+
+Replace the custom class `CamelSpringMain` we were using with the custom class `CamelSpringBootMain`. 
+This new class will be annotated with `@SpringBootApplication` that essentially replaces the setting of the `ApplicationContext` we were doing before. 
+
+We will also delete the `beans.xml` file and add an `application.yml` file.
+The `@ComponentScan` in our `CamelSpringBootMain` replaces this comparable line in the beans.xml 
+
+    // beans.xml
+    <context:component-scan base-package="codesmell.config"/>
+
+    // annotation 
+    @ComponentScan(basePackages = "codesmell.config")
+
+We are now able to run the application using the following on the CLI
+
+    mvn spring-boot:run
+
+## Updating the unit tests

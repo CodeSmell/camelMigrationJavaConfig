@@ -1,0 +1,6 @@
+camel:
+  springboot:
+    # The Camel context name
+    name: CamelSpringBoot
+    # to keep the JVM running
+    main-run-controller: true
