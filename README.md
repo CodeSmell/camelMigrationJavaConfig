@@ -478,3 +478,25 @@ We are now able to run the application using the following on the CLI
     mvn spring-boot:run
 
 ## Updating the unit tests
+The unit tests all work as currently written. 
+However, like the application prior to converting it to Spring Boot, it relies on an XML file to manage the Spring dependencies. 
+
+    @CamelSpringTest
+    @ContextConfiguration(
+    locations = {"classpath:MultiRouteTest-context.xml"},
+    classes = {BeanConfig.class, CamelRoutesConfig.class})
+    @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+    public class MultiRouteTest {
+
+We can revamp this test to use Spring Boot as well. 
+We will need to:
+- add `spring-boot-starter-test` dependency to the pom
+- remove `spring-test` dependency from the pom
+- remove the `src/test/resources/MultiRouteTest-context.xml` file
+- update the test classes
+
+
+    @CamelSpringBootTest
+    @SpringBootTest
+    public class MultiRouteTest {
+

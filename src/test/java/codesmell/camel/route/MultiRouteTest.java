@@ -2,27 +2,20 @@ package codesmell.camel.route;
 
 import codesmell.camel.CamelConstants;
 import codesmell.camel.TestDataUtil;
-import codesmell.config.BeanConfig;
-import codesmell.config.CamelRoutesConfig;
 import com.walmartlabs.x12.exceptions.X12ParserException;
 import org.apache.camel.*;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
-import org.apache.camel.test.spring.junit5.CamelSpringTest;
+import org.apache.camel.test.spring.junit5.CamelSpringBootTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-@CamelSpringTest
-@ContextConfiguration(
-        locations = {"classpath:MultiRouteTest-context.xml"},
-        classes = {BeanConfig.class, CamelRoutesConfig.class})
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@CamelSpringBootTest
+@SpringBootTest
 public class MultiRouteTest {
 
     @Autowired
