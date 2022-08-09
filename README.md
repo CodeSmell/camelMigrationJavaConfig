@@ -1,6 +1,8 @@
 # Camel Migration
 Exploring how to migrate a small Camel 2.x application to Camel 3.x
 
+**For details on each phase see the GitHub wiki**
+
 Camel is a very flexible framework that is designed around [Enterprise Integration Patterns (EIP)](https://www.enterpriseintegrationpatterns.com/).
 The transition from the 2.x to 3.x represents a major and non-backward compatible change. The 3.0.0 release came out in November 2019.
 This repo will explore how to use the various Camel migrations guides to migrate from Camel 2.x to Camel 3.x using a small application.
